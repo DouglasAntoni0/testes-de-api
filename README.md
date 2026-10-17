@@ -1,84 +1,54 @@
-# 🚀 AutomateX: API Testing Framework
+# AutomateX — testes de API com Cypress e Playwright
 
-![Cypress](https://img.shields.io/badge/-cypress-%23E5E5E5?style=for-the-badge&logo=cypress&logoColor=058a5e)
-![Playwright](https://img.shields.io/badge/-playwright-%232EAD33?style=for-the-badge&logo=playwright&logoColor=white)
-![TypeScript](https://img.shields.io/badge/-typescript-%230074c1?style=for-the-badge&logo=typescript&logoColor=white)
-![GitHub Actions](https://img.shields.io/badge/-github%20actions-%232671E5?style=for-the-badge&logo=githubactions&logoColor=white)
+[![CI](https://github.com/DouglasAntoni0/testes-de-api/actions/workflows/api-tests.yml/badge.svg)](https://github.com/DouglasAntoni0/testes-de-api/actions/workflows/api-tests.yml)
 
-Um projeto robusto e moderno focado 100% na automação e garantia de qualidade de APIs (Backend). Construído com foco em arquitetura escalável e design patterns para automação.
+Projeto de estudos com TypeScript sobre a API pública [Restful-booker](https://restful-booker.herokuapp.com/). Implementa o fluxo CRUD de reservas em Cypress e Playwright.
 
-## 🎯 Sobre o Projeto
+## Cobertura e ordem de execução
 
-Este repositório nasceu com o objetivo de criar uma infraestrutura de testes "production-ready", capaz de validar fluxos complexos de API de maneira rápida e determinística.
+Cada framework possui seis cenários: listar IDs, criar reserva, consultar a reserva criada, substituir seus dados, atualizar parcialmente e excluir confirmando o retorno 404 na consulta seguinte. A autenticação em `POST /auth` ocorre no setup.
 
-Em vez de focar em apenas uma ferramenta, implementei as mesmas validações utilizando os dois maiores frameworks do mercado de automação atual: **Cypress** e **Playwright**, ambos utilizando **TypeScript**.
+Os cenários de cada spec compartilham o ID criado pelo POST e devem executar na ordem do arquivo. No Playwright, o bloco usa `test.describe.serial`; uma falha interrompe os passos seguintes daquele grupo e uma repetição reinicia o grupo. A suíte não oferece isolamento de dados por teste. Execute o spec completo para reproduzir o fluxo.
 
-A API alvo escolhida para este desafio de arquitetura foi a [Restful-booker](https://restful-booker.herokuapp.com/), uma API projetada especificamente para expor fluxos de CRUD completos, validação de tokens e manipulação de estado.
+As operações protegidas enviam o token pelo header `Cookie: token=...`. Não usam Authorization Bearer.
 
-### Por que duas ferramentas?
+## Instalação
 
-Dominar apenas uma ferramenta limita a visão arquitetural. O Cypress se destaca na sua API chainable e no forte ecossistema de testes E2E, enquanto o Playwright oferece um `APIRequestContext` extremamente veloz, capaz de executar centenas de requisições independentes do browser em segundos.
-Ter a capacidade de avaliar o "trade-off" entre as tecnologias é essencial para decisões técnicas em equipes de alta performance.
-
-## 📐 Arquitetura & Padrões
-
-- **TypeScript-First**: Tipagem estática em todos os arquivos para evitar erros em tempo de compilação, facilitando a manutenção e a integração em times maiores.
-- **Encapsulamento**: Uso de Custom Commands (Cypress) e Abstração de Requisições (Playwright) para não poluir os arquivos de spec com lógicas de autenticação.
-- **Isolamento de Estado**: Cada teste é projetado para rodar de forma independente, gerenciando seu próprio "setup" e "teardown".
-
-## 🧪 Cobertura de Testes
-
-Os testes implementados cobrem os seguintes fluxos (Happy Path e Validações de Estado):
-
-- `POST /auth`: Autenticação e extração do Bearer Token.
-- `GET /booking`: Recuperação de IDs de reserva com validação de tipagem de arrays.
-- `POST /booking`: Validação de criação e conferência da persistência do payload.
-- `GET /booking/:id`: Confirmação da criação lendo a entidade recém-criada.
-- `PUT /booking/:id`: Validação de rotas protegidas (Requer Header de Auth/Cookie) e substituição completa de recursos.
-- `PATCH /booking/:id`: Atualização parcial de recursos.
-- `DELETE /booking/:id`: Exclusão e posterior confirmação do status code `404 Not Found`.
-
-## ⚙️ Como Executar Localmente
-
-### Pré-requisitos
-
-- Node.js (v18 ou superior)
-- NPM ou Yarn
-
-### Instalação
-
-Clone este repositório e instale as dependências:
+Use Node.js 22.13+ na linha 22 e npm. O ambiente público pode mudar seus dados e disponibilidade.
 
 ```bash
-git clone <seu-link-do-github-aqui>
+git clone https://github.com/DouglasAntoni0/testes-de-api.git
 cd testes-de-api
-npm install
+npm ci
 ```
 
-### Rodando via Cypress
-
-Para rodar os testes de API via Cypress (Headless mode):
+## Executar
 
 ```bash
 npm run test:cy
-```
-
-### Rodando via Playwright
-
-Para rodar os testes de API no motor do Playwright:
-
-```bash
 npm run test:pw
 ```
 
-## 🔄 Integração Contínua (CI/CD)
+Os comandos são separados para que o resultado de um framework não impeça a execução do outro. Playwright usa `APIRequestContext`; os testes deste projeto não precisam de navegador. Cypress utiliza seu próprio runner, baixado durante a instalação.
 
-O projeto possui uma pipeline configurada no **GitHub Actions** (`.github/workflows/api-tests.yml`) que garante que todo código novo obedeça aos critérios de qualidade:
+## Arquivos
 
-- Instala as dependências limpas.
-- Executa os lintings e checagens estáticas de código.
-- Roda as suites do Cypress e do Playwright em paralelo na nuvem.
+| Caminho | Responsabilidade |
+| --- | --- |
+| `cypress/e2e/api/booking.cy.ts` | Fluxo CRUD Cypress |
+| `cypress/support/commands.ts` | Obtenção do token |
+| `playwright/tests/api/booking.spec.ts` | Fluxo CRUD serial Playwright |
+| `cypress.config.ts`, `playwright.config.ts` | URL e configuração dos runners |
+| `tsconfig.json` | Opções de TypeScript |
 
----
+## CI e relatórios
 
-_Desenvolvido com foco em Qualidade, Código Limpo e Engenharia de Software._
+O workflow `api-tests.yml` roda Cypress e Playwright em jobs separados, em push/pull request para `main`/`master` e pelo agendamento diário configurado. Instala com `npm ci` e envia o relatório HTML do Playwright, inclusive em falha, quando gerado, com retenção de trinta dias.
+
+Os comandos `lint` e `format` existem no package.json, mas não fazem parte do workflow atual. O script `test` padrão continua sendo o placeholder; use os comandos específicos acima.
+
+HTML local do Playwright: `playwright-report/index.html`. A configuração guarda trace na primeira repetição de CI. Cypress não está configurado para gravar vídeos ou screenshots nesta suíte.
+
+## Limites e evolução
+
+O fluxo possui dependência de ordem e a exclusão ocorre no último cenário. Uma interrupção antes dele pode deixar uma reserva no ambiente. Isolar setup/cleanup por cenário, ampliar casos negativos e incluir checagem estática no CI são melhorias futuras.
