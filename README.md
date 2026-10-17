@@ -43,7 +43,9 @@ Os comandos são separados para que o resultado de um framework não impeça a e
 
 ## CI e relatórios
 
-O workflow `api-tests.yml` roda Cypress e Playwright em jobs separados, em push/pull request para `main`/`master` e pelo agendamento diário configurado. Instala com `npm ci` e envia o relatório HTML do Playwright, inclusive em falha, quando gerado, com retenção de trinta dias.
+O workflow `api-tests.yml` está configurado para rodar Cypress e Playwright em jobs separados, em push/pull request para `main`/`master` e pelo agendamento diário. Instala com `npm ci` e envia o relatório HTML do Playwright, inclusive em falha, quando gerado, com retenção de trinta dias.
+
+Se a aba Actions indicar que o workflow foi desativado por inatividade, use **Enable workflow** para habilitar seus eventos novamente. O arquivo versionado descreve a automação; consulte as execuções para confirmar que ela está ativa e verificar seus resultados.
 
 Os comandos `lint` e `format` existem no package.json, mas não fazem parte do workflow atual. O script `test` padrão continua sendo o placeholder; use os comandos específicos acima.
 
